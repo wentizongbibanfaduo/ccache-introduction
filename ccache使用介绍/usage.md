@@ -11,9 +11,9 @@
 
 通过 ccache 作为编译器，执行的编译命令到底会发生什么？
 让我们开启ccache的Debug， 通过debug 日志来了解 ccache的执行过程~
-# §开启Ccache debug
-当前笔者环境上的为 ccache 4.6版本的，后续内容都将以这个版本进行分析
-[ccache V4.6](https://github.com/ccache/ccache/releases/tag/v4.6)
+# §开启Ccache Debug
+当前笔者环境上的为 ccache 4.6.1版本的，后续内容都将以这个版本进行分析
+[ccache V4.6.1](https://github.com/ccache/ccache/releases/tag/v4.6.1)
 
 ```shell
     export CCACHE_DEBUG=1  // 在命令行中export 此环境变量，即可获取ccache的执行日志
@@ -38,7 +38,7 @@
 [2022-12-17T00:37:41.935236 19021] Compiler type: gcc                                 # 编译类型
 [2022-12-17T00:37:41.935308 19021] Source file: hello.cpp                             # 编译源文件
 [2022-12-17T00:37:41.935313 19021] Object file: hello.o                               # 目标文件
-[2022-12-17T00:37:41.935678 19021] Trying direct lookup                               # 尝试直连名字
+[2022-12-17T00:37:41.935678 19021] Trying direct lookup                               # 尝试直连命中
 [2022-12-17T00:37:41.936101 19021] No 363a9ukghjcrltqgtr1h22la2b4983bj8 in primary storage  
                         # 直连命中 Manifest文件： 363a9ukghjcrltqgtr1h22la2b4983bj8 在primary strage(主仓) 失败
 [2022-12-17T00:37:41.936432 19021] Running preprocessor                              # 开启预处理
@@ -123,13 +123,13 @@ ccache 会对当前的Cwd、这条编译命令
 
 通过上述介绍，清楚了Manifest文件的hash由来，但是对于Manifest文件里面的内容具体记录了什么还并不清楚;
 并且这个Result又是什么，它从哪而来要到哪去，也不清楚。
-### 3.Manifest文件里面记录了些什么？
-直接 `cat 7/a/82tb018gq3kmr9m4vui3hgaf41p6r2cM` 文件是无效的，它只会展示一堆乱码。
+### Manifest文件里面记录了些什么？
+直接 `cat 3/6/3a9ukghjcrltqgtr1h22la2b4983bj8M` 文件是无效的，它只会展示一堆乱码。
 原因是，ccache对于Manifest文件使用zstd进行压缩，并不能直接读取。
 
 需要通过ccache进行解压，才能获取其中的内容，具体用法如下：
 
-`ccache --inspect /usr1/zhou/cache/7/a/82tb018gq3kmr9m4vui3hgaf41p6r2cM`
+`ccache --inspect /usr1/zhou/cache/3/6/3a9ukghjcrltqgtr1h22la2b4983bj8M`
 > --inspect 解析manifest仅在ccache 4.6版本以上才能使用，对于ccache 4.6版本以下使用 --dump-manifest 
 
 ## Manifest的内容
@@ -167,10 +167,54 @@ Results (1):
 ```
 表示当前Manifest存了 1个Result文件，其中第0号的Result文件需要满足** 0-178的文件hash都能对应上**,则它的Result文件hash为0d19485rmt97it2tp10hcotaps0bevsua
 
-这样就和Result文件关联上了，这就是通过Manifest文件去找Result文件---》 直连命中。
-> 一个Manifest 可能存在多个Result，修改源文件会直接导致miss， 而有时只修改了头文件内容，就会执行预处理器就会产生一个Result 记录在同一个Manifest中 称为 预处理命中。
+这样就和Result文件关联上了，这就是通过Manifest文件去找Result文件---》 直连命中(Direct)。
+> 一个Manifest 可能存在多个Result，修改源文件会直接导致miss（Manifest的hash就对应不上）， 而有时只修改了头文件内容，在处理过程中发现某一个头文件hash对应不上，就会把当前的头文件hash追加到Manifest中，同时产生一个新的Result记录下来。在同一个Manifest中新生成一个Result文件 称为 预处理命中（Preprocessed）。
 
 # §Result详解
+此前我们Result文件是如何来的，接来下我们看看Result文件内有些什么?
 
-# ccache的进阶使用
-# ccache的相关资料
+## 开启Result Debug
+与manifest文件相似，result文件需要解压后才能看到记录内容。
+
+``` shell
+ccache --inspect /usr1/cache/0/d/19485rmt97it2tp10hcotaps0bevsuaR
+```
+> --inspect 解析manifest仅在ccache 4.6版本以上才能使用，对于ccache 4.6版本以下使用 --dump-result 
+
+![result内容](./pic/result%E5%86%85%E5%AE%B9.png)
+## Result内容详解
+
+```shell
+Magic: ccac                   # 包格式  固定为ccac
+Entry format version: 0       # 固定为0
+Entry type: 0 (result)        # 0为result 1为manifest
+Compression type: zstd        # 使用zstd/raw格式
+Compression level: 1          # 压缩等级
+Creation time: 1671208662     # 创建时间戳
+Ccache version: 4.6           # ccache version
+Namespace:                    # 暂未使用
+Entry size: 3559              # 当前总文件大小
+Embedded file #0: .o (3504 bytes) # 存在哪些内容  一个.o 大小为3504bytes
+```
+
+可以看到Result记录的内容不多，主要对编译输出内容进行压缩存储（.o .d .dwo....）都放在本Result内。
+
+回到我们最开始的编译命令
+```shell
+  ccache g++ -c hello.cpp -o hello.o
+```
+
+发现通过Result文件的信息中并不能直接获取hello.o相关信息。
+
+原因是只有在ccache运行过程中，ccache会将目的文件 **hello.o**这一个target记录在内部结构体当中，在解析Result的时候，会读取里面的.o 再将它重命名为hello.o，**目标文件路径在运行时才能被确认**。
+![hell.o](./pic/hello.o.png)
+
+# §总结
+经过上述介绍，我们更清晰地了解ccache的原理，总结如下图。
+
+![ccache编译流程](./pic/ccache%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B.png)
+
+ccache通过一个初步的hash生成Manifest文件，在Manifest文件中记录了Result文件。
+- 没有找到Manifest文件 -- Miss  存在编译器/源文件/编译命令发生修改;
+- 找到了Manifest文件，没有找到Result文件 -- Preprocessed  存在头文件修改;
+- 找到了Manifest文件，找到了Result文件 -- Direct 完全命中直接读取Result文件内的输出文件。
