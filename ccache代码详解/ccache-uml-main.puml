@@ -1,0 +1,26 @@
+participant main.cpp as main
+participant ccache.cpp as ccache
+participant mainoptions.cpp as parseOpt
+activate main
+
+main -> ccache ++ #Green: ccache_main
+
+note right of ccache
+    判断是否是 形如ccache -v 的ccache cmd操作
+end note
+ccache -> parseOpt ++ #Pink : process_main_option
+
+note right of parseOpt
+    解析命令参数并且执行
+end note
+return  EXIT 
+ccache --> main : EXIT
+
+note right of ccache
+    如果不是cmd命令，则开始生成cache
+end note
+ccache -> ccache ++ #Gold: cache_comliation 
+ccache --
+
+
+return EXIT
