@@ -3,7 +3,7 @@
 
 现在进行更详细的ccache详解。
 
-# ccache的原理
+# §前言
 在上一篇中，大致介绍了下ccache的缓存原理。
 
 
@@ -11,7 +11,7 @@
 
 通过 ccache 作为编译器，执行的编译命令到底会发生什么？
 让我们开启ccache的Debug， 通过debug 日志来了解 ccache的执行过程~
-## 开启Ccache debug
+# §开启Ccache debug
 当前笔者环境上的为 ccache 4.6版本的，后续内容都将以这个版本进行分析
 [ccache V4.6](https://github.com/ccache/ccache/releases/tag/v4.6)
 
@@ -69,7 +69,7 @@
 
 ```
 
-虽然注释了，但很多概念还是不懂啊，直连命中是什么？ Manifest 文件是什么？ 为什么要预处理？ Resul文件又是什么？
+虽然注释了，但很多概念还是不能理解，直连命中是什么？ Manifest 文件是什么？ 为什么要预处理？ Resul文件又是什么？
 
 先对比二次编译命中场景下的日志有什么区别，后续再来解释这些问题。
 
@@ -101,7 +101,7 @@
 二次构建少了很多日志，没有再执行编译，而是从缓存目录中直接查找Manifest文件和Result文件使用，这一过程称为**直连命中**。
 
 
-## 什么是Manifest文件？
+# §什么是Manifest文件？
 
 以下是一条ccache 执行的命令。
 ```shell
@@ -112,7 +112,7 @@ ccache 会对当前的Cwd、这条编译命令
     `g++ -c hello.cpp -o hello.o`
     以及编译器(g++)、输入源文件的内容(hello.cpp ) ...等一些条目，进行hash计算，生成一个Key值，并以这个key值作为文件名生成一个Manifest文件，具体hash了哪些，可以查看 hello.o.ccache-input-text中的内容。
 
-### 2. Where Is Manifest?
+## Where Is Manifest?
 通过日志可以看到Manifest和Result文件的绝对路径（`export CCACHE_DIR=/usr1/cache`可指定了缓存目录）
 
 此时查看缓存目录下就存在两个关键文件 ***3/6/3a9ukghjcrltqgtr1h22la2b4983bj8M*** 和***0/d/19485rmt97it2tp10hcotaps0bevsuaR***。
@@ -132,7 +132,7 @@ ccache 会对当前的Cwd、这条编译命令
 `ccache --inspect /usr1/zhou/cache/7/a/82tb018gq3kmr9m4vui3hgaf41p6r2cM`
 > --inspect 解析manifest仅在ccache 4.6版本以上才能使用，对于ccache 4.6版本以下使用 --dump-manifest 
 
-### Manifest的内容
+## Manifest的内容
 解压后得到
 
  ![Manifest内容1](./pic/Manifestn%E5%86%85%E5%AE%B9-1.png)
@@ -170,8 +170,7 @@ Results (1):
 这样就和Result文件关联上了，这就是通过Manifest文件去找Result文件---》 直连命中。
 > 一个Manifest 可能存在多个Result，修改源文件会直接导致miss， 而有时只修改了头文件内容，就会执行预处理器就会产生一个Result 记录在同一个Manifest中 称为 预处理命中。
 
+# §Result详解
 
- 。。。待更新
-## Result详解
 # ccache的进阶使用
 # ccache的相关资料
