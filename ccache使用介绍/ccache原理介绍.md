@@ -21,7 +21,7 @@
 ```
 
 可以看到除了目标文件hello.o之外，还剩了三个ccache相关的日志
-![开启debug](./pic/%E5%BC%80%E5%90%AFccache-debug.png)
+![开启debug](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/%E5%BC%80%E5%90%AFccache-debug.png)
 - *.ccache-input-c
 - *.ccache-input-d
 - *.ccache-input-text
@@ -117,7 +117,7 @@ ccache 会对当前的Cwd、这条编译命令
 
 此时查看缓存目录下就存在两个关键文件 ***3/6/3a9ukghjcrltqgtr1h22la2b4983bj8M*** 和***0/d/19485rmt97it2tp10hcotaps0bevsuaR***。
 
-![生成缓存文件](./pic/缓存目录.png)
+![生成缓存文件](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/%E7%BC%93%E5%AD%98%E7%9B%AE%E5%BD%95.png)
 
 其中后缀为M的为Manifest文件，后缀为R的为Result文件。
 
@@ -135,11 +135,12 @@ ccache 会对当前的Cwd、这条编译命令
 ## Manifest的内容
 解压后得到
 
- ![Manifest内容1](./pic/Manifestn%E5%86%85%E5%AE%B9-1.png)
+ ![Manifest内容1](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/Manifestn%E5%86%85%E5%AE%B9-1.png)
+
  
  以及
 
- ![Manifest内容2](./pic/manifest%E5%86%85%E5%AE%B9-2.png)
+ ![Manifest内容2](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/manifest%E5%86%85%E5%AE%B9-2.png)
 
 Manifest文件前面是一堆规格信息,无需过多关注，重点是从**File paths(179) :**开始
 - 依赖文件数
@@ -181,7 +182,7 @@ ccache --inspect /usr1/cache/0/d/19485rmt97it2tp10hcotaps0bevsuaR
 ```
 > --inspect 解析manifest仅在ccache 4.6版本以上才能使用，对于ccache 4.6版本以下使用 --dump-result 
 
-![result内容](./pic/result%E5%86%85%E5%AE%B9.png)
+![result内容](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/result%E5%86%85%E5%AE%B9.png)
 ## Result内容详解
 
 ```shell
@@ -207,12 +208,12 @@ Embedded file #0: .o (3504 bytes) # 存在哪些内容  一个.o 大小为3504by
 发现通过Result文件的信息中并不能直接获取hello.o相关信息。
 
 原因是只有在ccache运行过程中，ccache会将目的文件 **hello.o**这一个target记录在内部结构体当中，在解析Result的时候，会读取里面的.o 再将它重命名为hello.o，**目标文件路径在运行时才能被确认**。
-![hell.o](./pic/hello.o.png)
+![hell.o](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/hello.o.png)
 
 # §总结
 经过上述介绍，我们更清晰地了解ccache的原理，总结如下图。
 
-![ccache编译流程](./pic/ccache%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B.png)
+![ccache编译流程](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/ccache%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B.png)
 
 ccache通过一个初步的hash生成Manifest文件，在Manifest文件中记录了Result文件。
 - 没有找到Manifest文件 -- Miss  存在编译器/源文件/编译命令发生修改;

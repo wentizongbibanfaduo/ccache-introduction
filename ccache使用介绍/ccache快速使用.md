@@ -1,13 +1,13 @@
 
 @[toc]
 
-# ccache是什么
+# §Ccache是什么
    ccache -- “compiler cache”的缩写，是一个gcc/g++的c语言编译器缓存。
-# ccache能做什么
+# §Ccache能做什么
    简单来说，ccache将基于单条gcc编译命令级别颗粒，将本次编译命令的产物，复制进行压缩一份到缓存目录中，下次编译的时候， <font color='red'>如果检测到相同编译命令，并且没有修改输入的源文件（当前c/cpp或依赖的头文件） </font>，则直接读取缓存目录中上次编译流程，省去编译时间，从而优化编译时长。
 
  对项目工程而言，一次代码修改仅会改变极少量的源文件，使用ccache只会重新编译修改部分的代码相关的源文件，而未进行修改的源文件则可以直接使用缓存优化了编译时长。
-# ccache的效率如何
+# §Ccache的效率如何
 ## 小试牛刀
   
 使用ccache编译一个简单的cpp
@@ -62,7 +62,7 @@ make clean后使用ccache二次编译：
 使用ccache二次构建  | 2.8s
 
 可以看到，对于重复编译，无论是单命令编译，还是实际工程编译，使用ccache构建速度都压缩了十倍，极大的提升了编译效率！
-# ccache 如何使用
+# §Ccache 如何使用
   ## 安装ccche
   * apt直接安装
     ```shell
@@ -77,7 +77,7 @@ make clean后使用ccache二次编译：
   	[github： https://github.com/ccache/ccache](https://github.com/ccache/ccache)
 
 
-## ccache的使用方式
+## Ccache的使用方式
 * ccache 拉起编译命令
 ```shell
     ccache g++ -c hello.cpp -o hello.o
@@ -119,7 +119,7 @@ cmake -B output && cmake --build output
 
 ![cmake中使用](./pic/1-%E5%85%A5%E9%97%A8%E4%BD%BF%E7%94%A8/Cmake%E4%B8%AD%E4%BD%9C%E4%B8%BACXX.jpg)
 
-# ccache使用情况
+# §Ccache使用情况
 如上在使用ccache跑一个CMake工程的时候，我们如果不注意标准输出内容，就比较难判断本次编译是否使用了ccache。
 
 > 有没有一种更好的方式来帮助我们判断当前工程有没有使用ccache？
@@ -159,7 +159,7 @@ export CCACHE_DIR=/usr1/zhou/ccache
 source /etc/profile
 ```
 
-# 小结
+# §小结
 如果你只是想简单了解并使用ccache， 通过上述的介绍，已经可以满足日常使用ccache帮助自己的工程更快的进行编译。
 
 如果还想对ccache有更深的了解，在后续内容中会介绍ccache 其他好用的配置项功能以及ccache的源码实现。
