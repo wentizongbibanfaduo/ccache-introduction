@@ -6,6 +6,7 @@ Ccache的进阶使用
 * [ccache官方链接](https://ccache.dev/)
 
 * [github链接](https://github.com/ccache/ccache/)
+
   
 > 官网中的使用相关的内容集中在 ccache/doc/MANUAL.adoc
 
@@ -19,19 +20,27 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
   一次生效，其他终端无效。
 
     ```
-    export CCACHE_RECACACHE=true
+    export CCACHE_RECACHE=true
     ```
 
 * 通过配置文件
   
   写入配置文件永久生效。
+  1. 查看本地config文件路径
+  ``` 
+  ccache -s -v
+  ```
+  ![查看config路径](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/%E6%9F%A5%E7%9C%8Bconfig%E8%B7%AF%E5%BE%84.png)
 
+  1. 写入配置
+   
     conf中写入 `recache = true`， 即有相同作用。
+
+  ![配置文件生效](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%94%9F%E6%95%88.png)
+
 # §CCache的几个好用的配置项
-在MANUAL.adoc，详细且细致的介绍了所有的配置项，但是很多配置项是比较少使用的，在此介绍几个总结几个相对常用的
-* CCACHE_MAX_SIZE
-    
-    缓存目录最大缓存容量，一般无需手动清理缓存，ccache在运行时会自动通过清理缓存。
+在[MANUAL.adoc](https://github.com/ccache/ccache/blob/master/doc/MANUAL.adoc)，详细且细致的介绍了所有的配置项，但是很多配置项是比较少使用的，在此介绍几个总结几个相对常用的
+
 * CCACHE_CONFIGPATH
   
   指定配置文件路径，对于首次安装的时候，对于ccache并不了解，很多时候都选择了默认安装，有时路径不是那么符合预期,因此ccache提供了修改配置文件的路径的能力.
@@ -42,6 +51,12 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
     有时因为一些意外，可能导致了Manifest文件损坏，一直命中不了编译效率恶化，可以通过CCACHE_RECACHE重新生成Manifest和Result文件，就和重启一样解决99%命中的问题。
 
     `export CCACHE_RECACHE=true`
+
+* CCACHE_MAX_SIZE
+    
+    缓存目录最大缓存容量，一般无需手动清理缓存，ccache在运行时会自动通过清理缓存。
+    `export CCACHE_MAXSIZE=20G`
+
 * CCACHE_BASEDIR
   
   假定某条编译命令如下
