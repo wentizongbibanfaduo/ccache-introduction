@@ -1,13 +1,7 @@
 Ccache的进阶使用
 
-# §Ccache的文档地址
-如果单从搜索引擎查找ccache的文档是非常少的，更多的还是在官网上进行查找
+# §Ccache配置的使用方式
 
-* [ccache官方链接](https://ccache.dev/)
-
-* [github链接](https://github.com/ccache/ccache/)
-
-  
 > 官网中的使用相关的内容集中在 ccache/doc/MANUAL.adoc
 
 ccache所有的配置项都可以通过export环境变量进行修改,conf文件中缺省ccache前缀，仅保留后边的即可。
@@ -38,7 +32,7 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
 
   ![配置文件生效](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%94%9F%E6%95%88.png)
 
-# §CCache的几个好用的配置项
+# §CCache中好用的配置项
 在[MANUAL.adoc](https://github.com/ccache/ccache/blob/master/doc/MANUAL.adoc)，详细且细致的介绍了所有的配置项，但是很多配置项是比较少使用的，在此介绍几个总结几个相对常用的
 
 * CCACHE_CONFIGPATH
