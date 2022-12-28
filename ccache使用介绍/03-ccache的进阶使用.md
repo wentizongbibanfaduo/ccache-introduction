@@ -26,7 +26,7 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
   ```
   ![查看config路径](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/%E6%9F%A5%E7%9C%8Bconfig%E8%B7%AF%E5%BE%84.png)
 
-  1. 写入配置
+  2. 写入配置
    
     conf中写入 `recache = true`， 即有相同作用。
 
@@ -49,6 +49,7 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
 * CCACHE_MAX_SIZE
     
     缓存目录最大缓存容量，一般无需手动清理缓存，ccache在运行时会自动通过清理缓存。
+    
     `export CCACHE_MAXSIZE=20G`
 
 * CCACHE_BASEDIR
