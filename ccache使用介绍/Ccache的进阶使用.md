@@ -60,16 +60,24 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
 ## nfs
 1. 挂载Nfs
  
-  本次直接使用 虚拟机的共享目录 /mnt/hgfs/,并将*权限修改为777*
+  挂载自己的nfs （/mnt/nfs/）并将*权限修改为777*
 
-2. 声明远端仓库
+1. 声明远端仓库
    
   ```
-  export CCACHE_SECONDARY_STORAGE=file:/mnt/hgfs/
+  export CCACHE_SECONDARY_STORAGE=file:/mnt/nfs/
   export CCACHE_DEBUG=1
   ```
-3. 进行编译
-   
+3. 进行首次编译
+   ![nfs首次编译](./pic/nfs%E9%A6%96%E6%AC%A1%E7%BC%96%E8%AF%91.png)
+   通过日志可以看到已经归档到了/mnt/nfs/中
+
+4.  使用远端缓存
+ - 删除本地主仓缓存
+    `rm /usr1/cache/* -rf`
+ - 编译
+   ![nfs命中](./pic/nfs-%E5%91%BD%E4%B8%AD.png)
+   可以看到，在远端命中的同时将缓存文件转存到本地的缓存目录当中，下次会优先命中本地缓存目录。
   
 ## Redis
   
@@ -88,38 +96,27 @@ export CCACHE_SECONDARY_STORAGE=redis+unix://p4ssw0rd@localhost/run/redis.sock?d
 1. 开启redis
    
   对此在另一台192.168.1.5机器上开启redis,设置6379端口并**打开防火墙**，设置密码为123456。
-存储到db 0上
+
 
 2. 设置远程仓库
+   存储到db 0上
 ```
 export CCACHE_SECONDARY_STORAGE="redis://123456@192.168.1.5:6379/0|connect-timeout=50"
 export CCACHE_DEBUG=1
 ```
 
 3. 进行首次编译
-   
-   make
-
-4. 远端归档
 ![redis首次编译](./pic/redis%E9%A6%96%E6%AC%A1%E7%BC%96%E8%AF%91.png)
 
 通过ccache的日志，可以看到已经成功存储到了redis中
 
-5. 使用远端缓存
+4. 使用远端缓存
  - 删除本地主仓缓存
     `rm /usr1/cache/* -rf`
  - make
 ![redis远端命中](./pic/redis%E8%BF%9C%E7%AB%AF%E5%91%BD%E4%B8%AD.png)
 
-可以看到，在远端命中的同时将缓存文件转存到本地的缓存目录当中，下次会直接本地缓存目录命中
 
+## http
 
-* http
-```
-export CCACHE_SECONDARY_STORAGE=http://localhost
-
-export CCACHE_SECONDARY_STORAGE=http://someusername:p4ssw0rd@example.com/cache/
-
-export CCACHE_SECONDARY_STORAGE=http://localhost:8080|layout=bazel|connect-timeout=50
-```
   
