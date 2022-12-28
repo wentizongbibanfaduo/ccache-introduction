@@ -22,7 +22,7 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
   
     conf中写入 `recache = true`， 即有相同作用。
 # §CCache的几个好用的配置项
-在MANUAL.adoc，详细且细致的介绍了所有的配置项，但是很多配置项是比较少使用的
+在MANUAL.adoc，详细且细致的介绍了所有的配置项，但是很多配置项是比较少使用的，在此介绍几个总结几个相对常用的
 * CCACHE_MAX_SIZE
     
     缓存目录最大缓存容量，一般无需手动清理缓存，ccache在运行时会自动通过清理缓存。
@@ -57,27 +57,69 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
    
 # §Ccache的远程仓库
  ccache在 4.4版本提供了远端缓存能力，如果别人在开发过程中归档了到了远端缓存目录（nfs、redis、http）等，那么别人编译过即相当于你也编译过，无需再重复编译其他人的修改。如果多位开发者都mnt同一个nfs路径,ccache除了会对于CCACHE_DIR存一份Manifest/Result文件，同时也会在nfs路径中存一份，当本地CCACHE_DIR不存在时，则会去访问远端路径，同时将远端路径下的M/R文件拷贝下自己的CCACHE_DIR（本地主缓存路径），这样无需每次都访问远端仓库，而造成使用缓存不稳定。
-* nfs
-  `export CCACHE_SECONDARY_STORAGE=file:/shared/nfs/directory`
+## nfs
+1. 挂载Nfs
+ 
+  本次直接使用 虚拟机的共享目录 /mnt/hgfs/,并将*权限修改为777*
+
+2. 声明远端仓库
+   
+  ```
+  export CCACHE_SECONDARY_STORAGE=file:/mnt/hgfs/
+  export CCACHE_DEBUG=1
+  ```
+3. 进行编译
+   
   
-* redis
+## Redis
+  
+使用方式有以下几种
 ```
-export CCACHE_BASEDIR=redis://localhost
+export CCACHE_SECONDARY_STORAGE=redis://localhost
 
-export CCACHE_BASEDIR=redis://p4ssw0rd@cache.example.com:6379/0|connect-timeout=50
+export CCACHE_SECONDARY_STORAGE=redis://p4ssw0rd@cache.example.com:6379/0|connect-timeout=50
 
-export CCACHE_BASEDIR=redis+unix:/run/redis.sock
+export CCACHE_SECONDARY_STORAGE=redis+unix:/run/redis.sock
 
-export CCACHE_BASEDIR=redis+unix:///run/redis.sock
+export CCACHE_SECONDARY_STORAGE=redis+unix:///run/redis.sock
 
-export CCACHE_BASEDIR=redis+unix://p4ssw0rd@localhost/run/redis.sock?db=0
+export CCACHE_SECONDARY_STORAGE=redis+unix://p4ssw0rd@localhost/run/redis.sock?db=0
 ```
+1. 开启redis
+   
+  对此在另一台192.168.1.5机器上开启redis,设置6379端口并**打开防火墙**，设置密码为123456。
+存储到db 0上
+
+2. 设置远程仓库
+```
+export CCACHE_SECONDARY_STORAGE="redis://123456@192.168.1.5:6379/0|connect-timeout=50"
+export CCACHE_DEBUG=1
+```
+
+3. 进行首次编译
+   
+   make
+
+4. 远端归档
+![redis首次编译](./pic/redis%E9%A6%96%E6%AC%A1%E7%BC%96%E8%AF%91.png)
+
+通过ccache的日志，可以看到已经成功存储到了redis中
+
+5. 使用远端缓存
+ - 删除本地主仓缓存
+    `rm /usr1/cache/* -rf`
+ - make
+![redis远端命中](./pic/redis%E8%BF%9C%E7%AB%AF%E5%91%BD%E4%B8%AD.png)
+
+可以看到，在远端命中的同时将缓存文件转存到本地的缓存目录当中，下次会直接本地缓存目录命中
+
+
 * http
 ```
-export CCACHE_BASEDIR=http://localhost
+export CCACHE_SECONDARY_STORAGE=http://localhost
 
-export CCACHE_BASEDIR=http://someusername:p4ssw0rd@example.com/cache/
+export CCACHE_SECONDARY_STORAGE=http://someusername:p4ssw0rd@example.com/cache/
 
-export CCACHE_BASEDIR=http://localhost:8080|layout=bazel|connect-timeout=50
+export CCACHE_SECONDARY_STORAGE=http://localhost:8080|layout=bazel|connect-timeout=50
 ```
   
