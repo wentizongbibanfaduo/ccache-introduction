@@ -16,11 +16,12 @@
     ```
     time g++ hello.cpp -o hello.o
     ```
+    ![原始编译](./pic/1-%E5%85%A5%E9%97%A8%E4%BD%BF%E7%94%A8/%E5%8E%9F%E5%A7%8B%E7%BC%96%E8%AF%91gcc.jpg)
 - 首次通过ccache 进行编译
   
     `time ccache g++ hello.cpp -o hello.o`
 
-    ![原始编译](./pic/1-%E5%85%A5%E9%97%A8%E4%BD%BF%E7%94%A8/%E5%8E%9F%E5%A7%8B%E7%BC%96%E8%AF%91gcc.jpg)
+    ![gcc首次编译](./pic/1-%E5%85%A5%E9%97%A8%E4%BD%BF%E7%94%A8/gcc%E5%8A%A0ccacache%E9%A6%96%E6%AC%A1%E7%BC%96%E8%AF%91.jpg)
 
 
 - 二次通过ccache 进行编译

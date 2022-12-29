@@ -33,7 +33,7 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
   ![配置文件生效](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%94%9F%E6%95%88.png)
 
 # §CCache中好用的配置项
-在[MANUAL.adoc](https://github.com/ccache/ccache/blob/master/doc/MANUAL.adoc)，详细且细致的介绍了所有的配置项，但是很多配置项是比较少使用的，在此介绍几个总结几个相对常用的
+在[MANUAL.adoc](https://github.com/ccache/ccache/blob/master/doc/MANUAL.adoc)，详细且细致的介绍了所有的配置项，但是很多配置项是比较少使用的，在此总结几个相对常用的
 
 * CCACHE_CONFIGPATH
   
@@ -46,7 +46,7 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
 
     `export CCACHE_RECACHE=true`
 
-* CCACHE_MAX_SIZE
+* CCACHE_MAXSIZE
     
     缓存目录最大缓存容量，一般无需手动清理缓存，ccache在运行时会自动通过清理缓存。
     
@@ -79,7 +79,7 @@ ccache所有的配置项都可以通过export环境变量进行修改,conf文件
  
   挂载自己的nfs （/mnt/nfs/）并将*权限修改为777*
 
-1. 声明远端仓库
+2. 声明远端仓库
    
   ```
   export CCACHE_SECONDARY_STORAGE=file:/mnt/nfs/
@@ -136,4 +136,61 @@ export CCACHE_DEBUG=1
 
 ## Http
 
-  
+1. 配置nginx
+   
+vim /etc/nginx/nginx.conf
+输入如下内容
+```
+user root;
+worker_processes auto;
+
+error_log /var/log/nginx/error.log notice;
+pid /var/run/nginx.pid;
+
+events {
+        worker_connections 1024;
+}
+
+http {
+        include mime.types;
+        default_type application/octet-stream;
+
+        access_log /var/log/nginx/access.log;
+        sendfile on;
+        keepalive_timeout 65;
+        server {
+                listen 20080;
+                server_name _;
+                location /ccache/ {
+                        autoindex on;
+                        autoindex_exact_size off;
+                        autoindex_localtime on;
+                        alias /ccache/;
+                        log_not_found off;
+                        dav_methods PUT DELETE;
+                        create_full_put_path on;
+                        client_max_body_size 100M;
+                }
+        }
+}
+
+```
+2. 启动nginx
+   
+   直接执行 `nginx `
+
+   如上配置的端口为20080, 本地浏览器输入启动nginx的 ip:20080，可以成功进入才认为启动nginx成功。
+   ![nginx启动](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/nginx%E5%90%AF%E5%8A%A8.png)
+
+3. 首次编译
+```
+export CCACHE_SECONDARY_STORAGE="http://192.168.32.128:20080/ccache/"
+export CCACHE_DEBUG=1
+```
+查看ccache日志，可以看到已经成功存储到http仓库中
+![http首次编译](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/nginx.png)
+4. 远端命中
+   - 删除本地主仓缓存
+`rm /usr1/cache/* -rf`
+ - 编译
+![http命中](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/nginx%E5%91%BD%E4%B8%AD.png)
