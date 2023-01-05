@@ -1,7 +1,7 @@
 代码时序图
 # CodeDetails
 ## main函数
-ccache 首先对于当前输入命令进行解析，假定输入命令操作形如
+ccache 首先对于当前输入参数进行解析，如果是ccache的命令 形如
 ```
 ccache -V // 显示ccache 版本
 ccache -s // 显示统计信息
