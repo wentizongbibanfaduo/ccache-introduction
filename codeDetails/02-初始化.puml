@@ -1,0 +1,61 @@
+participant ccache.cpp as main
+participant Context.cpp as context
+participant Config.cpp as config
+participant Storage.cpp as storage
+
+
+main --> main ++ #Gold : cache_comliation
+main --> main ++ #Green : ctx.initialize
+main --> context ++ #FFBBBB : 
+context --> config ++ : config.read
+note right of config
+        读取config文件,保存到内部变量ctx中
+end note
+return
+return
+main --> main ++: Logging::init
+main --
+main --
+
+main --> main ++ #Green : initialize
+main --> context ++ #FFBBBB: save origin argvs
+note right of context
+        保存原始命令到内部变量ctx中
+end note
+return
+
+main --> context  ++ #FFBBBB: ctx.storage.initialize
+context --> storage ++  #DarkSalmon: primary.initialize
+storage --> storage  : clean_internal_tempdir
+note right of storage
+        清理临时编译路径
+end note
+return
+
+context --> storage ++  #DarkSalmon: add_secondary_storages
+storage --> storage ++ : parse_storage_configs
+storage --
+storage --> storage ++: m_secondary_storages.push_back
+note right of storage
+        实例化远程仓库
+end note
+storage --
+return
+return
+main --
+
+
+main --> main ++ #Green: find_compiler
+note right of main
+        从环境变量中找实际编译器
+end note
+
+main --
+main --> main ++ #Green: do_cache_compilation
+
+note right of main
+        初始化完成 开始计算hash
+end note
+
+
+
