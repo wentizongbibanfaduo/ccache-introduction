@@ -18,7 +18,7 @@ main --
 main --
 
 main --> main ++ #Green : initialize
-main --> context ++ #FFBBBB: save origin argvs
+main --> context ++ #FFBBBB: from_argv
 note right of context
         保存原始命令到内部变量ctx中
 end note
