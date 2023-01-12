@@ -1,0 +1,53 @@
+participant ccache.cpp as main
+participant Storage.cpp as storage
+participant Manifest.cpp as manifest
+participant Result.cpp as result
+
+main --> main ++ #Pink: cache_compilation
+main --> main ++ #Gold : do_cache_compilation
+main --> main ++ #FFFF00 : hash_common_info
+main--
+main --> main ++ #FFFF00 : calculate_result_and_manifest_key
+main --> main : hash.digest
+main --> storage ++ #DarkSalmon:ctx.storage.get
+note right of storage
+        从stroage中获取manifest
+end note
+return 成功获取到Manifest
+
+main --> manifest ++ #red: read_manifest
+return  返回Manifest中的内容
+main --> manifest ++ #red: look_up_result_digest
+
+manifest --> manifest :result_matches
+note right of manifest
+        从Manifest中最新生成的Result进行匹配头文件，
+        如果所有头文件都存在且hash值能匹配上，则使用该reulst。
+end note
+return 返回result 路径
+main--
+
+main --> main ++ #FFFF00: from_cache
+main --> storage ++ #DarkSalmon:ctx.storage.get
+note right of storage
+        根据reulst路径从stroage中获取result文件，
+        获取流程与manifest一致分别从从本地/远获取，
+        参考上图
+end note
+return  成功获取
+
+main --> result ++: result_reader.read
+result --> result :read_entry
+note right of result
+        读取result文件内容，将result中压缩的.o还原至ctx保存输出路径。
+end note
+
+return
+main--
+main--
+main --> main ++ #Gold: ctx.storage.primary.increment_statistics
+note right of main
+        记录为命中情况，保存到status中，后续查看整体命中情况。
+end note
+main--
+
