@@ -3,9 +3,10 @@ participant argprocessing.cpp as argprocess
 participant Storage.cpp as storage
 
 
+
 main --> main ++ #Gold : do_cache_compilation
-main --> argprocess ++ : process_args
-argprocess --> argprocess ++ : process_arg
+main --> argprocess ++ #red : process_args
+argprocess --> argprocess ++ #Pink : process_arg
 argprocess --
 note right of argprocess
         对于每个输入参数逐一解析,保存输入文件，输出路径等参数到ctx中
@@ -13,40 +14,40 @@ end note
 
 return
 
-main --> main ++ : hash_common_info
+main --> main ++ #FFFF00 : hash_common_info
 main --
 note right of main
         对于cwd、配置文件的sloppiness选项、输出路径字符串、编译器参数...等加入hash缓存区
 end note
 
 
-main -->main ++ : calculate_result_and_manifest_key
+main -->main ++ #FFFF00 : calculate_result_and_manifest_key
 note right of main
         对于输入参数、解析出来的源文件...等加入hash缓存区
 end note
 
 main --> main : hash.digest
 note right of main
-        得到hash值
+        diget当前hash缓存区得到hash值,即Manifest路径
 end note
 
-main --> storage ++:ctx.storage.get
-storage --> storage ++: primary.get
+main --> storage ++ #DarkSalmon:ctx.storage.get
+storage --> storage ++ #97694F : primary.get
 storage --
 note right of storage
-        本地仓查询
+        本地仓查询Manifest是否存在
 end note
 
-storage --> storage ++: get_from_secondary_storage
+storage --> storage ++ #97694F : get_from_secondary_storage
 storage --
 note right of storage
         本地仓不存在，则查询远程仓库
 end note
 
-storage --> storage ++ : primary.put
+storage --> storage ++ #97694F : primary.put
 storage --
 note right of storage
-        将远程仓库的内容拷贝到本地仓
+        将远程仓库的Manifest拷贝到本地仓
 end note
 return
 main --
