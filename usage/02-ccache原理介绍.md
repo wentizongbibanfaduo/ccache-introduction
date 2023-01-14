@@ -30,7 +30,8 @@
 目前我们仅需查看 cacche-log即可里面记载了ccache的执行日志，其他三个文件为计算hash内容debug 日志，在后续中再进行介绍。
 ## 探索ccache的debug 日志
 查看hello.o.ccache-log
-除去上面大量的初始化配置日志，比较关键的日志如下**
+
+**除去上面大量的初始化配置日志，比较关键的日志如下**
 ``` shell
 [2022-12-17T00:37:41.934881 19021] Command line: ccache g++ -c hello.cpp -o hello.o   # 当前的编译命令
 [2022-12-17T00:37:41.934912 19021] Hostname: zhou-virtual-machine                     # 当前的user
@@ -142,7 +143,7 @@ ccache 会对当前的Cwd、这条编译命令
 
  ![Manifest内容2](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/manifest%E5%86%85%E5%AE%B9-2.png)
 
-Manifest文件前面是一堆规格信息,无需过多关注，重点是从**File paths(179) :**开始
+Manifest文件前面是一堆规格信息,无需过多关注，重点是从**File paths(179)** 开始
 - 依赖文件数
 
   File paths  179 ，表明本次编译依赖了 179个其他文件，并且记录以绝对路径的记录index。
@@ -166,10 +167,17 @@ Results (1):
     File info indexes: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178
     Key: 0d19485rmt97it2tp10hcotaps0bevsua
 ```
-表示当前Manifest存了 1个Result文件，其中第0号的Result文件需要满足** 0-178的文件hash都能对应上**,则它的Result文件hash为0d19485rmt97it2tp10hcotaps0bevsua
+表示当前Manifest存了 1个Result文件，其中第0号的Result文件需要满足 **0-178的文件hash都能对应上**,则它的Result文件hash为0d19485rmt97it2tp10hcotaps0bevsua
 
-这样就和Result文件关联上了，这就是通过Manifest文件去找Result文件---》 直连命中(Direct)。
-> 一个Manifest 可能存在多个Result，修改源文件会直接导致miss（Manifest的hash就对应不上）， 而有时只修改了头文件内容，在处理过程中发现某一个头文件hash对应不上，就会把当前的头文件hash追加到Manifest中，同时产生一个新的Result记录下来。在同一个Manifest中新生成一个Result文件 称为 预处理命中（Preprocessed）。
+这样Manifest就和Result文件关联上了，
+
+而通过Manifest文件去找Result文件的过程 ---》 直连命中(Direct)。
+
+> 此处存在一个疑问，对于上述Manifest的头文件的路径及其hash值是哪里来的？
+
+通过预处理器产生， ccache会对于预处理结果gcc -E 后的.i文件进行hash得到Result路径。
+
+如果缓存目录中存在Result则无需进行完整编译，直接使用Result文件，同时将预处理中的头文件信息写入Manifest中的过程--》 预处理命中（Preprocessed）
 
 # §Result详解
 此前我们Result文件是如何来的，接来下我们看看Result文件内有些什么?
@@ -216,6 +224,6 @@ Embedded file #0: .o (3504 bytes) # 存在哪些内容  一个.o 大小为3504by
 ![ccache编译流程](./pic/2-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D/ccache%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B.png)
 
 ccache通过一个初步的hash生成Manifest文件，在Manifest文件中记录了Result文件。
-- 没有找到Manifest文件 -- Miss  存在编译器/源文件/编译命令发生修改;
-- 找到了Manifest文件，没有找到Result文件 -- Preprocessed  存在头文件修改;
-- 找到了Manifest文件，找到了Result文件 -- Direct 完全命中直接读取Result文件内的输出文件。
+- 没有找到Result文件，需要预处理编译 + 原始命令编译 -- Miss（清理缓存目录/存在编译器/源文件/编译命令发生修改）;
+- 通过预处理器生成Result路径并且Result文件存在，只需要执行预处理编译 -- Preprocessed（只开启预处理命中/删除manifest文件）;
+- 通过Manifest文件找到了Result文件，无需编译 -- Direct（编译文件、编译命令无修改，缓存目录完全命中Manifest和Result）。

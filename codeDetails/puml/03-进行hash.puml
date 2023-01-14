@@ -1,3 +1,5 @@
+@startuml preDirect
+
 participant ccache.cpp as main
 participant argprocessing.cpp as argprocess
 participant Storage.cpp as storage
@@ -52,6 +54,6 @@ end note
 return
 main --
 
-
+@enduml
 
 

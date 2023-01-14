@@ -1,3 +1,5 @@
+@startuml main
+
 participant main.cpp as main
 participant ccache.cpp as ccache
 participant mainoptions.cpp as parseOpt
@@ -24,3 +26,4 @@ ccache --
 
 
 return EXIT
+@enduml

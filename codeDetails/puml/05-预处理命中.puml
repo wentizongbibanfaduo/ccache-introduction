@@ -1,0 +1,80 @@
+@startuml preprocess命中
+participant ccache.cpp as main
+participant Storage.cpp as storage
+participant PrimaryStorage.cpp as primaryStorage
+participant Manifest.cpp as manifest
+
+
+main --> main ++ #Pink: cache_compilation
+main --> main ++ #Gold : do_cache_compilation
+
+
+main --> main ++ #FFFF00 : calculate_result_and_manifest_key
+
+main --> storage ++ #DarkSalmon:ctx.storage.get
+note right of storage #FFAAAA
+        未找到Manifest
+end note
+return 未找到Manifest
+main--
+
+note right of main #FFAAAA
+     由于本地未找到Manifest，再次调用calculate_result_and_manifest_key
+     生成result路径
+end note
+main --> main ++ #FFFF00  : calculate_result_and_manifest_key
+main --> main ++ #GreenYellow : get_result_key_from_cpp
+main --> main ++ #Gray: do_execute
+note right of main
+        进行预处理 执行gcc -E操作
+end note
+main--
+
+main --> main ++ #Gray: process_preprocessed_file
+note right of main
+        解析预处理器产物 .i，
+        获取依赖头文件,并加入hash缓冲区，记录到ctx中
+end note
+main--
+
+main --> main ++ #Gray: hash.digest
+note right of main
+        对于hash缓冲区进行hash，得到result路径
+end note
+main--
+main--
+main--
+
+main --> main ++ #FFFF00: from_cache
+main --> storage ++ #DarkSalmon:ctx.storage.get
+note right of storage #FFAAAA
+        从stroage中可以找到Result;
+        通过执行预处理器，能够找到Result，预处理命中
+end note
+return  成功从缓存目录中查找Result文件 
+main --
+
+
+main --> main ++ #FFFF00: update_manifest_file
+note right of main 
+        将从预处理器中获取的编译依赖头文件hash信息保存到manifest中，
+        用于下次直连命中
+end note
+
+main --> storage ++ #DarkSalmon: ctx.storage.put
+storage --> primaryStorage ++ #Blue: primary.put
+primaryStorage --> manifest ++ #Green: entry_writer
+manifest --> manifest : manifest.add_result
+
+return
+return
+return
+main--
+main--
+
+main --> main ++ #Gold: ctx.storage.primary.increment_statistics
+note right of main
+        记录为Preprocessd命中情况，保存到status中。
+end note
+main--
+@enduml

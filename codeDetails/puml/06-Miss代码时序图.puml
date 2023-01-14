@@ -1,0 +1,60 @@
+@startuml preprocess命中
+participant ccache.cpp as main
+participant Storage.cpp as storage
+
+
+main --> main ++ #Pink: cache_compilation
+main --> main ++ #Gold : do_cache_compilation
+
+
+main --> main ++ #FFFF00 : calculate_result_and_manifest_key
+
+main --> storage ++ #DarkSalmon:ctx.storage.get
+note right of storage #FFAAAA
+        未找到Manifest
+end note
+return 未找到Manifest
+main--
+
+note right of main #FFAAAA
+     由于本地未找到Manifest，再次调用calculate_result_and_manifest_key
+     生成result路径
+end note
+main --> main ++ #FFFF00  : calculate_result_and_manifest_key
+
+main--
+
+main --> main ++ #FFFF00: from_cache
+main --> storage ++ #DarkSalmon:ctx.storage.get
+note right of storage #FFAAAA
+        未找到Result文件
+end note
+return  未找到Result文件 
+main --
+
+main --> main ++ #FFFF00: to_cache
+main --> main ++ #GreenYellow: do_execute
+main --
+
+main --> storage ++ #DarkSalmon : ctx.storage.put
+note right of storage #FFAAAA
+        将原始编译输出件写入Result中
+end note
+return
+main --> main ++ #GreenYellow : write_result
+
+main--
+main--
+main --> main ++ #FFFF00 : update_manifest_file
+main --> storage ++ #DarkSalmon : ctx.storage.put
+return
+note right of storage #FFAAAA
+        将原始编译输出件写入Manifest中
+end note
+main--
+main --> main ++ #Gold: ctx.storage.primary.increment_statistics
+note right of main
+        记录为Miss命中情况，保存到status中。
+end note
+main--
+@enduml

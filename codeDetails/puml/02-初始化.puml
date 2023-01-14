@@ -1,3 +1,4 @@
+@startuml init
 participant ccache.cpp as main
 participant Context.cpp as context
 participant Config.cpp as config
@@ -57,5 +58,4 @@ note right of main
         初始化完成 开始计算hash
 end note
 
-
-
+@enduml

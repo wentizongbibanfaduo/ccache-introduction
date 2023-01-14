@@ -1,3 +1,4 @@
+@startuml directHash
 participant ccache.cpp as main
 participant Storage.cpp as storage
 participant Manifest.cpp as manifest
@@ -9,15 +10,19 @@ main --> main ++ #FFFF00 : hash_common_info
 main--
 main --> main ++ #FFFF00 : calculate_result_and_manifest_key
 main --> main : hash.digest
+note right of main
+        diget当前hash缓存区得到hash值,即Manifest路径
+end note
+
 main --> storage ++ #DarkSalmon:ctx.storage.get
-note right of storage
-        从stroage中获取manifest
+note right of storage #FFAAAA
+        从stroage中成功获取Manifest
 end note
 return 成功获取到Manifest
 
-main --> manifest ++ #red: read_manifest
+main --> manifest ++ #Green: read_manifest
 return  返回Manifest中的内容
-main --> manifest ++ #red: look_up_result_digest
+main --> manifest ++ #Green: look_up_result_digest
 
 manifest --> manifest :result_matches
 note right of manifest
@@ -29,10 +34,9 @@ main--
 
 main --> main ++ #FFFF00: from_cache
 main --> storage ++ #DarkSalmon:ctx.storage.get
-note right of storage
-        根据reulst路径从stroage中获取result文件，
-        获取流程与manifest一致分别从从本地/远获取，
-        参考上图
+note right of storage #FFAAAA
+        从storage中成功获取Result;
+        Manifest和Result都能直接获取，直连命中
 end note
 return  成功获取
 
@@ -47,7 +51,8 @@ main--
 main--
 main --> main ++ #Gold: ctx.storage.primary.increment_statistics
 note right of main
-        记录为命中情况，保存到status中，后续查看整体命中情况。
+        记录为Direct命中情况，保存到status中，后续查看整体命中情况。
 end note
 main--
 
+@enduml

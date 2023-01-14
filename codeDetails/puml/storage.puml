@@ -1,0 +1,66 @@
+@startuml storage
+
+interface create_backend
+
+
+
+class  Storage {
+    + +get()
+    + +put()
+    + +remove()
+    - -add_secondary_storages()
+    - -get_from_secondary_storage()
+    - -put_in_secondary_storage()
+    - -remove_from_secondary_storage()
+}
+class  PrimaryStorage {
+    {method} +  +get()
+    {method} +  +push()
+}
+
+abstract class SecondaryStorage {
+    {field} +  +class Backend
+    {abstract} +  +unique_ptr<Backend> create_backend()
+}
+
+class fileStroage{
+    {method} + +create_backend()
+}
+
+class reidStroage{
+    {method} + +create_backend()
+}
+
+class httpStroage{
+    {method} + +create_backend()
+}
+
+abstract class Backend {
+    {abstract} +  +get()
+    {abstract} +  +put()
+    {abstract} +  +remove()
+}
+
+
+SecondaryStorage --> Backend
+SecondaryStorage --> create_backend
+note right of create_backend 
+ 抽象工厂
+end note
+
+Backend <|-- fileStroageBackend    
+Backend <|--  redisStroagBackend
+Backend <|--  httpStroageBackend
+
+create_backend <|.. fileStroage   
+create_backend <|.. reidStroage
+create_backend <|.. httpStroage
+
+fileStroage --> fileStroageBackend
+reidStroage --> redisStroagBackend
+httpStroage --> httpStroageBackend
+
+Storage "1" *-- "1" PrimaryStorage
+Storage "1" *-- "0..." SecondaryStorage
+
+@enduml
