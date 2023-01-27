@@ -194,3 +194,7 @@ export CCACHE_DEBUG=1
 `rm /usr1/cache/* -rf`
  - 编译
 ![http命中](./pic/3-%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8/nginx%E5%91%BD%E4%B8%AD.png)
+
+# 其他内容
+- [01-ccache快速使用](./01-ccache%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8.md)
+- [02-ccache原理介绍](./02-ccache%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D.md)

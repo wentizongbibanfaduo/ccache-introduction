@@ -1,6 +1,3 @@
-
-@[toc]
-
 # §Ccache是什么
    ccache -- “compiler cache”的缩写，是一个gcc/g++的c语言编译器缓存。
 # §Ccache能做什么
@@ -164,3 +161,7 @@ source /etc/profile
 如果你只是想简单了解并使用ccache， 通过上述的介绍，已经可以满足日常使用ccache帮助自己的工程更快的进行编译。
 
 如果还想对ccache有更深的了解，在后续内容中会介绍ccache 其他好用的配置项功能以及ccache的源码实现。
+
+# 其他内容
+- [02-ccache原理介绍](./02-ccache%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D.md)
+- [03-ccache的进阶使用](./03-ccache%E7%9A%84%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8.md)

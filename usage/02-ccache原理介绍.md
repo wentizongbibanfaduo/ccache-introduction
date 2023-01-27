@@ -227,3 +227,7 @@ ccache通过一个初步的hash生成Manifest文件，在Manifest文件中记录
 - 没有找到Result文件，需要预处理编译 + 原始命令编译 -- Miss（清理缓存目录/存在编译器/源文件/编译命令发生修改）;
 - 通过预处理器生成Result路径并且Result文件存在，只需要执行预处理编译 -- Preprocessed（只开启预处理命中/删除manifest文件）;
 - 通过Manifest文件找到了Result文件，无需编译 -- Direct（编译文件、编译命令无修改，缓存目录完全命中Manifest和Result）。
+
+# 其他内容
+- [01-ccache快速使用](./01-ccache%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8.md)
+- [03-ccache的进阶使用](./03-ccache%E7%9A%84%E8%BF%9B%E9%98%B6%E4%BD%BF%E7%94%A8.md)
